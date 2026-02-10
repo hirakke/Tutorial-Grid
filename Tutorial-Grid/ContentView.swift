@@ -9,53 +9,56 @@ import SwiftUI
 import SwiftData
 
 struct ContentView: View {
-    @Environment(\.modelContext) private var modelContext
-    @Query private var items: [Item]
-
+    let columnLayout = Array(repeating: GridItem(), count:3)
+    //Array(repeating: 配列に入れたいelements,count:何個つくるか)
+    //Array(repeating: GridItem(), count: 3)→[GridItem(),GridItem(),GridItem()]
+    
+    @State private var selectedColor = Color.gray
+    
+    let allColors: [Color] = [
+        .pink,
+        .red,
+        .orange,
+        .yellow,
+        .green,
+        .mint,
+        .teal,
+        .cyan,
+        .blue,
+        .indigo,
+        .purple,
+        .brown,
+        .gray
+    ]
+    
     var body: some View {
-        NavigationSplitView {
-            List {
-                ForEach(items) { item in
-                    NavigationLink {
-                        Text("Item at \(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))")
-                    } label: {
-                        Text(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))
+        VStack{
+            Text("Selected Color")
+                .font(.body)
+                .fontWeight(.semibold)
+                .foregroundColor(selectedColor)
+                .padding(10)
+            
+            ScrollView{
+                LazyVGrid(columns: columnLayout){
+                    ForEach(allColors, id: \.description){ color in
+                        Button{
+                            selectedColor = color
+                        } label:{
+                            RoundedRectangle(cornerRadius: 4.0)
+                                .aspectRatio(1.0, contentMode: .fit)
+                                .foregroundColor(color)
+                            //contentMode
+                        }
+                        .buttonStyle(.plain)
                     }
                 }
-                .onDelete(perform: deleteItems)
-            }
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    EditButton()
-                }
-                ToolbarItem {
-                    Button(action: addItem) {
-                        Label("Add Item", systemImage: "plus")
-                    }
-                }
-            }
-        } detail: {
-            Text("Select an item")
-        }
-    }
-
-    private func addItem() {
-        withAnimation {
-            let newItem = Item(timestamp: Date())
-            modelContext.insert(newItem)
-        }
-    }
-
-    private func deleteItems(offsets: IndexSet) {
-        withAnimation {
-            for index in offsets {
-                modelContext.delete(items[index])
             }
         }
     }
 }
-
-#Preview {
-    ContentView()
-        .modelContainer(for: Item.self, inMemory: true)
-}
+    
+    
+    #Preview {
+        ContentView()
+    }
